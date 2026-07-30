@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Trọng - Trang cá nhân</title>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { themeBg: 'var(--bg-body)', themePanel: 'var(--bg-panel)', themeBorder: 'var(--border)', themeText: 'var(--text-main)', themeSub: 'var(--text-sub)', primary: 'var(--primary)' } } } }
+    </script>
+</head>
+<body class="antialiased pt-16 h-screen overflow-y-auto transition-colors">
+
+    <nav class="bg-themePanel shadow-sm border-b border-themeBorder fixed top-0 w-full z-50 h-16 flex items-center justify-between px-4 lg:px-10 transition-colors">
+        <div class="flex items-center gap-4 w-1/2 md:w-1/3">
+            <a href="feed.html" class="md:hidden text-themeText hover:text-primary transition text-xl mr-3"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="feed.html" class="text-2xl font-bold text-primary hover:opacity-80 transition">Dev Trọng</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button onclick="toggleTheme()" class="text-themeSub hover:text-primary transition text-xl"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+            <div class="relative">
+                <button onclick="toggleNotifDropdown()" class="text-themeSub hover:text-primary transition text-xl relative">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                <div id="notifDropdown" class="absolute right-0 mt-3 w-80 bg-themePanel border border-themeBorder shadow-xl rounded-xl hidden z-50 overflow-hidden">
+                    <div class="p-3 border-b border-themeBorder font-bold text-themeText">Thông báo</div>
+                    <div id="notifList" class="max-h-80 overflow-y-auto"></div>
+                </div>
+            </div>
+            <a href="profile.html" class="hover:opacity-80 transition cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary font-bold">U</div>
+            </a>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto flex justify-center gap-6 mt-6 px-4">
+        <aside class="hidden lg:block w-1/4 sticky top-24 h-[calc(100vh-6rem)]">
+            <ul class="space-y-2">
+                <li><a href="feed.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-themePanel font-medium text-themeText transition"><i class="fa-solid fa-house w-6 text-center text-lg text-themeSub"></i> Bảng tin</a></li>
+                <li><a href="profile.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold text-primary bg-themePanel shadow-sm"><i class="fa-solid fa-user w-6 text-center text-lg"></i> Trang cá nhân</a></li>
+                <li><a href="chat.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-themePanel font-medium text-themeText transition"><i class="fa-solid fa-comment-dots w-6 text-center text-lg text-themeSub"></i> Nhắn tin</a></li>
+                <li><button onclick="logout()" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 font-medium text-red-500 transition mt-4"><i class="fa-solid fa-right-from-bracket w-6 text-center text-lg"></i> Đăng xuất</button></li>
+            </ul>
+        </aside>
+
+        <main class="w-full lg:w-2/4 max-w-2xl">
+
+            <div class="bg-themePanel rounded-xl shadow-sm border border-themeBorder overflow-hidden mb-6 transition-colors">
+                <div id="coverPhoto" class="h-48 md:h-64 bg-gray-300 bg-cover bg-center" style="background-image: url('https://via.placeholder.com/800x300');"></div>
+                <div class="px-6 md:px-10 pb-6 relative flex flex-col md:flex-row items-center md:items-end justify-between">
+                    <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6 -mt-16 md:-mt-20 z-10 w-full md:w-auto">
+                        <div id="userAvatarContainer"></div>
+                        <div class="text-center md:text-left mt-2 md:mt-16">
+                            <h2 id="profileName" class="text-2xl md:text-3xl font-bold text-themeText mb-1">Tên người dùng</h2>
+                            <p id="profileEmail" class="text-themeSub text-sm md:text-base">email@example.com</p>
+                            <p id="profileBio" class="text-themeText text-sm mt-2 hidden italic"></p>
+                        </div>
+                    </div>
+                    <div id="actionArea" class="mt-6 md:mt-0 flex gap-2 w-full md:w-auto justify-center">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-themePanel rounded-xl shadow-sm border border-themeBorder mb-6 flex items-center transition-colors p-2 gap-1">
+                <button onclick="switchTab('posts')" id="tab-posts" class="flex-1 py-2 px-2 rounded-lg font-bold text-sm bg-primary text-white transition whitespace-nowrap text-center">
+                    <i class="fa-solid fa-newspaper md:mr-2"></i><span class="hidden md:inline">Bài viết</span>
+                </button>
+                <button onclick="switchTab('friends')" id="tab-friends" class="flex-1 py-2 px-2 rounded-lg font-bold text-sm text-themeSub hover:bg-themeBg transition whitespace-nowrap text-center">
+                    <i class="fa-solid fa-user-group md:mr-2"></i><span class="hidden md:inline">Bạn bè</span>
+                </button>
+                <button onclick="switchTab('photos')" id="tab-photos" class="flex-1 py-2 px-2 rounded-lg font-bold text-sm text-themeSub hover:bg-themeBg transition whitespace-nowrap text-center">
+                    <i class="fa-solid fa-image md:mr-2"></i><span class="hidden md:inline">Ảnh</span>
+                </button>
+                <button onclick="switchTab('videos')" id="tab-videos" class="flex-1 py-2 px-2 rounded-lg font-bold text-sm text-themeSub hover:bg-themeBg transition whitespace-nowrap text-center">
+                    <i class="fa-solid fa-video md:mr-2"></i><span class="hidden md:inline">Video</span>
+                </button>
+
+                <div class="relative group flex-1">
+                    <button id="tab-more" class="w-full py-2 px-2 rounded-lg font-bold text-sm text-themeSub hover:bg-themeBg transition whitespace-nowrap text-center">
+                        <i class="fa-solid fa-caret-down md:mr-2"></i><span class="hidden md:inline">Thêm</span>
+                    </button>
+                    <div class="absolute right-0 top-full mt-1 w-48 bg-themePanel border border-themeBorder rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 flex flex-col p-1">
+                        <button onclick="switchTab('following')" id="tab-following" class="text-left py-2 px-4 rounded-md font-bold text-sm text-themeSub hover:bg-themeBg transition">
+                            <i class="fa-solid fa-rss w-5 text-center mr-1"></i>Đang theo dõi
+                        </button>
+                        <button onclick="switchTab('requests')" id="tab-requests" class="hidden text-left py-2 px-4 rounded-md font-bold text-sm text-themeSub hover:bg-themeBg transition">
+                            <i class="fa-solid fa-envelope-open-text w-5 text-center mr-1"></i>Lời mời
+                        </button>
+                        <button onclick="switchTab('saved')" id="tab-saved" class="hidden text-left py-2 px-4 rounded-md font-bold text-sm text-themeSub hover:bg-themeBg transition">
+                            <i class="fa-solid fa-bookmark w-5 text-center mr-1"></i>Đã lưu
+                        </button>
+                        <button onclick="switchTab('hidden')" id="tab-hidden" class="hidden text-left py-2 px-4 rounded-md font-bold text-sm text-themeSub hover:bg-themeBg transition">
+                            <i class="fa-solid fa-eye-slash w-5 text-center mr-1"></i>Đã ẩn
+                        </button>
+
+
+                        <button onclick="toggleMentionPicker('postContent', this)" class="mention-btn flex items-center gap-2 text-themeSub hover:bg-themeBg px-3 py-2 rounded-lg font-medium transition cursor-pointer">
+                            <i class="fa-solid fa-at text-blue-500 text-lg"></i>
+                        </button>
+
+                        <select id="postPrivacy" class="bg-themeBg text-themeText border border-themeBorder rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer hover:bg-themePanel transition">
+                            <option value="0">🌐 Công khai</option>
+                            <option value="3">🤝 Bạn của bạn bè</option>
+                            <option value="1">👥 Bạn bè</option>
+                            <option value="2">🔒 Chỉ mình tôi</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profileCreatePostBox" class="bg-themePanel rounded-xl shadow-sm p-4 mb-6 border border-themeBorder transition-colors hidden">
+                <div class="flex gap-3">
+                    <div id="profilePostMyAvatar" class="w-10 h-10 rounded-full bg-themeBg border border-themeBorder flex-shrink-0 shadow-sm"></div>
+                    <textarea id="profilePostContent" class="w-full bg-themeBg text-themeText border border-themeBorder rounded-xl p-3 outline-none resize-none min-h-[80px]" placeholder="Bạn đang nghĩ gì thế?"></textarea>
+                </div>
+
+                <div id="profileImagePreviewContainer" class="hidden mt-3 relative">
+                    <div id="profileMediaPreviewContent" class="w-full max-h-64 rounded-lg overflow-hidden flex justify-center bg-black"></div>
+                    <button onclick="removeProfileImage()" class="absolute top-2 right-2 bg-gray-800/80 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-700 transition"><i class="fa-solid fa-times"></i></button>
+                </div>
+
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-themeBorder flex-wrap gap-2">
+                    <div class="flex gap-2 items-center">
+                        <button onclick="document.getElementById('profilePostImage').click()" class="flex items-center gap-2 text-themeSub hover:bg-themeBg px-3 py-2 rounded-lg font-medium transition cursor-pointer text-sm">
+                            <i class="fa-solid fa-image text-green-500 text-lg"></i> Ảnh/Video
+                        </button>
+                        <button onclick="toggleEmojiPicker('profilePostContent', this)" class="emoji-btn flex items-center gap-2 text-themeSub hover:bg-themeBg px-3 py-2 rounded-lg font-medium transition cursor-pointer text-sm">
+                            <i class="fa-regular fa-face-smile text-yellow-500 text-lg"></i>
+                        </button>
+                        <button onclick="toggleMentionPicker('profilePostContent', this)" class="mention-btn flex items-center gap-2 text-themeSub hover:bg-themeBg px-3 py-2 rounded-lg font-medium transition cursor-pointer text-sm">
+                            <i class="fa-solid fa-at text-blue-500 text-lg"></i>
+                        </button>
+
+                        <select id="profilePostPrivacy" class="bg-themeBg text-themeText border border-themeBorder rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer hover:bg-themePanel transition">
+                            <option value="0">🌐 Công khai</option>
+                            <option value="3">🤝 Bạn của bạn bè</option>
+                            <option value="1">👥 Bạn bè</option>
+                            <option value="2">🔒 Chỉ mình tôi</option>
+                        </select>
+                    </div>
+
+                    <input type="file" id="profilePostImage" accept="image/*,video/mp4,video/webm,video/quicktime" class="hidden" onchange="previewProfileSelectedImage(event)">
+
+                    <button id="btnSubmitProfilePost" onclick="submitProfilePost()" class="bg-primary hover:opacity-80 text-white font-bold py-2 px-6 rounded-lg transition disabled:opacity-50 text-sm">
+                        Đăng bài
+                    </button>
+                </div>
+            </div>
+
+            <div id="tabContentContainer" class="space-y-4 pb-10">
+                <div class="text-center py-10 text-themeSub"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
+            </div>
+        </main>
+
+        <aside class="hidden xl:block w-1/4 sticky top-24 h-[calc(100vh-6rem)]">
+            <div class="bg-themePanel rounded-xl shadow-sm border border-themeBorder p-5 transition-colors">
+                <h3 class="font-bold text-themeText mb-4 text-base">Gợi ý cho bạn</h3>
+                <div id="suggestedUsersContainer" class="space-y-4">
+                    <div class="text-center text-themeSub py-4"><i class="fa-solid fa-spinner fa-spin text-xl"></i></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div id="editModal" class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center transition-opacity duration-200">
+        <div id="editModalContent" class="bg-themePanel w-full max-w-lg rounded-xl shadow-2xl border border-themeBorder overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-4 border-b border-themeBorder flex justify-between items-center bg-themeBg">
+                <h3 class="font-bold text-lg text-themeText" id="editModalTitle">Chỉnh sửa</h3>
+                <button onclick="closeEditModal()" class="text-themeSub hover:text-red-500 text-xl transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4">
+                <input type="hidden" id="editTargetType">
+                <input type="hidden" id="editTargetId">
+                <textarea id="editInputContent" class="w-full h-32 p-3 bg-themeBg border border-themeBorder rounded-lg focus:outline-none focus:border-primary text-themeText resize-none" placeholder="Nhập nội dung mới..."></textarea>
+            </div>
+            <div class="p-4 border-t border-themeBorder bg-themeBg flex justify-end gap-3">
+                <button onclick="closeEditModal()" class="px-5 py-2 rounded-lg font-bold text-themeSub hover:bg-gray-200 dark:hover:bg-gray-700 transition">Hủy</button>
+                <button onclick="saveEditModal()" class="px-5 py-2 rounded-lg font-bold bg-primary text-white hover:opacity-80 transition shadow-sm">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="js/global.js?v=128"></script>
+    <script src="js/profile.js?v=23"></script>
+</body>
+</html>

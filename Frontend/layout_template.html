@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Trọng - Bảng tin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { colors: { primary: '#1877f2', secondary: '#f0f2f5' } }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f0f2f5; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased pt-16">
+
+    <nav class="bg-white shadow-sm fixed top-0 w-full z-50 h-16 flex items-center justify-between px-4 lg:px-10">
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold text-primary cursor-pointer">Dev Trọng</h1>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <div class="relative cursor-pointer hover:bg-gray-100 p-2 rounded-full transition duration-200" onclick="toggleNotifDropdown()">
+                <i class="fa-solid fa-bell text-xl text-gray-600"></i>
+                <span id="notifBadge" class="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white hidden">0</span>
+                
+                <div id="notifDropdown" class="absolute right-0 top-12 bg-white border border-gray-200 w-80 max-h-96 overflow-y-auto shadow-xl rounded-xl hidden cursor-default z-50 p-2">
+                    <h3 class="font-bold text-lg p-2 border-b">Thông báo mới</h3>
+                    <div id="notifList">
+                        </div>
+                </div>
+            </div>
+            
+            <div class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center font-bold text-primary cursor-pointer">
+                ME
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto flex justify-center gap-6 mt-6 px-4">
+        
+        <aside class="hidden lg:block w-1/4 sticky top-24 h-[calc(100vh-6rem)]">
+            <ul class="space-y-2">
+                <li><a href="feed.html" class="flex items-center gap-3 p-3 rounded-lg font-semibold text-primary bg-blue-50"><i class="fa-solid fa-house w-6 text-center text-lg"></i> Bảng tin</a></li>
+                <li><a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-200 font-medium text-gray-700 transition"><i class="fa-solid fa-user w-6 text-center text-lg text-gray-500"></i> Trang cá nhân</a></li>
+                <li><a href="chat.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-200 font-medium text-gray-700 transition"><i class="fa-solid fa-comment-dots w-6 text-center text-lg text-gray-500"></i> Nhắn tin</a></li>
+                <li><button onclick="logout()" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 font-medium text-red-500 transition mt-4"><i class="fa-solid fa-right-from-bracket w-6 text-center text-lg"></i> Đăng xuất</button></li>
+            </ul>
+        </aside>
+
+        <main class="w-full lg:w-2/4 max-w-2xl">
+            
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100">
+                <div class="flex gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0"></div>
+                    <textarea id="postContent" class="w-full bg-gray-100 rounded-xl p-3 outline-none resize-none min-h-[80px]" placeholder="Trọng ơi, bạn đang nghĩ gì thế?"></textarea>
+                </div>
+                
+                <div id="imagePreviewContainer" class="hidden mt-3 relative">
+                    <img id="imagePreview" src="" class="w-full max-h-64 object-cover rounded-lg">
+                    <button onclick="removeImage()" class="absolute top-2 right-2 bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-700"><i class="fa-solid fa-times"></i></button>
+                </div>
+
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                    <button onclick="document.getElementById('postImage').click()" class="flex items-center gap-2 text-gray-500 hover:bg-gray-100 px-3 py-2 rounded-lg font-medium transition cursor-pointer">
+                        <i class="fa-solid fa-image text-green-500 text-lg"></i> Ảnh/Video
+                    </button>
+                    <input type="file" id="postImage" accept="image/*" class="hidden" onchange="previewSelectedImage(event)">
+                    
+                    <button id="btnSubmitPost" onclick="submitPost()" class="bg-primary hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition disabled:bg-blue-300">
+                        Đăng bài
+                    </button>
+                </div>
+            </div>
+
+            <div id="newsfeedContainer" class="space-y-4">
+                <div class="text-center text-gray-400 py-10"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Đang tải bảng tin...</div>
+            </div>
+            
+        </main>
+
+        <aside class="hidden xl:block w-1/4 sticky top-24 h-[calc(100vh-6rem)]"></aside>
+    </div>
+
+    <script src="js/feed.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# Visual Studio / C#
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.db
+*.sqlite
+*.mdf
+*.ldf
+
+# Cấu hình bảo mật
+appsettings.json
+appsettings.Development.json
+*.env
+
+# Bỏ qua thư mục chứa file người dùng upload (tránh làm nặng Git)
+**/wwwroot/uploads/
+**/wwwroot/images/
+**/wwwroot/media/
+
+# Các file rác hệ thống
+.DS_Store
+Thumbs.db

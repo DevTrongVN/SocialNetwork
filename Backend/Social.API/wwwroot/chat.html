@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Trọng - Tin nhắn riêng tư</title>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { themeBg: 'var(--bg-body)', themePanel: 'var(--bg-panel)', themeBorder: 'var(--border)', themeText: 'var(--text-main)', themeSub: 'var(--text-sub)', primary: 'var(--primary)' } } } }
+    </script>
+</head>
+<body class="antialiased pt-16 h-screen overflow-hidden transition-colors">
+
+    <nav class="bg-themePanel shadow-sm border-b border-themeBorder fixed top-0 w-full z-50 h-16 flex items-center justify-between px-4 lg:px-10 transition-colors">
+
+        <div class="flex items-center gap-4 w-1/2 md:w-1/3">
+            <a href="feed.html" class="md:hidden text-themeText hover:text-primary transition text-xl mr-3"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="feed.html" class="text-2xl font-bold text-primary hover:opacity-80 transition">Dev Trọng</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button onclick="toggleTheme()" class="text-themeSub hover:text-primary transition text-xl"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+            <div class="relative">
+                <button onclick="toggleNotifDropdown()" class="text-themeSub hover:text-primary transition text-xl relative">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                <div id="notifDropdown" class="absolute right-0 mt-3 w-80 bg-themePanel border border-themeBorder shadow-xl rounded-xl hidden z-50 overflow-hidden">
+                    <div class="p-3 border-b border-themeBorder font-bold text-themeText">Thông báo</div>
+                    <div id="notifList" class="max-h-80 overflow-y-auto"></div>
+                </div>
+            </div>
+            <a href="profile.html" class="hover:opacity-80 transition cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary font-bold">U</div>
+            </a>
+        </div>
+    </nav>
+    <div id="createGroupModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden">
+        <div class="bg-themePanel border border-themeBorder p-6 rounded-2xl w-96 shadow-2xl transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-4 border-b border-themeBorder pb-3">
+                <h3 class="font-bold text-lg text-themeText flex items-center gap-2">
+                    <i class="fa-solid fa-users text-primary"></i> Tạo nhóm trò chuyện
+                </h3>
+                <button onclick="closeCreateGroupModal()" class="text-themeSub hover:text-red-500 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <label class="block text-xs font-semibold text-themeSub mb-2">Tên nhóm chat</label>
+            <input type="text" id="groupNameInput" placeholder="Ví dụ: Team Dev Trọng, Hội Game Thủ..." onkeypress="if(event.key==='Enter') submitCreateGroup()" class="w-full px-4 py-2.5 bg-themeBg text-themeText border border-themeBorder rounded-xl focus:outline-none focus:border-primary text-sm mb-6 transition">
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeCreateGroupModal()" class="px-4 py-2 bg-themeBg text-themeSub hover:text-themeText rounded-xl text-sm font-medium transition">Hủy</button>
+                <button onclick="submitCreateGroup()" class="px-5 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:opacity-80 transition shadow-sm">Tạo nhóm ngay</button>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto flex gap-0 h-[calc(100vh-4rem)] pt-6 pb-6 px-4">
+
+        <aside class="w-1/3 md:w-1/4 bg-themePanel border border-themeBorder rounded-l-xl shadow-sm flex flex-col transition-colors overflow-hidden">
+            <div class="p-4 border-b border-themeBorder font-bold text-themeText flex justify-between items-center">
+                <span>Danh bạ chat</span>
+                <button onclick="openCreateGroupModal()" class="text-primary hover:opacity-80 transition text-xs bg-primary/10 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-bold" title="Tạo nhóm trò chuyện mới">
+                    <i class="fa-solid fa-users-line"></i> Tạo nhóm
+                </button>
+            </div>
+
+            <div class="p-3 border-b border-themeBorder">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-search text-themeSub text-sm"></i>
+                    </div>
+                    <input type="text" id="searchEmail" placeholder="Nhập Email để tìm..." onkeypress="if(event.key==='Enter') searchUser()" class="w-full pl-9 pr-3 py-2 bg-themeBg text-themeText border border-themeBorder rounded-lg focus:outline-none focus:border-primary text-sm transition">
+                </div>
+            </div>
+
+            <div id="friendListContainer" class="flex-1 overflow-y-auto">
+                <div class="text-center py-10 text-themeSub"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            </div>
+        </aside>
+
+        <main class="w-2/3 md:w-3/4 bg-themeBg border-y border-r border-themeBorder rounded-r-xl shadow-sm flex flex-col relative transition-colors overflow-hidden">
+
+            <div id="currentChatInfo" class="hidden p-4 bg-themePanel border-b border-themeBorder flex justify-between items-center text-sm font-bold text-primary">
+                <div>
+                    Đang trò chuyện với: <span id="chatTargetName" class="text-themeText">...</span>
+                    <span class="text-green-500 text-xs hidden md:inline ml-2"><i class="fa-solid fa-lock"></i> E2EE</span>
+                </div>
+
+                <div class="flex items-center gap-3 md:gap-5">
+                    <button id="btnAudioCall" onclick="startCall(false)" class="text-themeSub hover:text-green-500 transition px-2 hidden" title="Gọi âm thanh"><i class="fa-solid fa-phone text-lg"></i></button>
+                    <button id="btnVideoCall" onclick="startCall(true)" class="text-themeSub hover:text-blue-500 transition px-2 hidden" title="Gọi Video"><i class="fa-solid fa-video text-lg"></i></button>
+
+                    <button onclick="toggleChatInfo()" class="text-themeSub hover:text-primary transition px-2"><i class="fa-solid fa-circle-info text-xl"></i></button>
+                </div>
+            </div>
+
+            <div id="chatRightPanel" class="absolute top-0 right-0 w-72 md:w-80 h-full bg-themePanel border-l border-themeBorder shadow-2xl transform translate-x-full transition-transform duration-300 z-20 flex flex-col hidden">
+                <div class="p-4 border-b border-themeBorder flex justify-between items-center bg-themeBg">
+                    <span class="font-bold text-themeText">Thông tin đoạn chat</span>
+                    <button onclick="toggleChatInfo()" class="text-themeSub hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+
+                <div class="p-4 overflow-y-auto flex-1 custom-scrollbar">
+                    <h4 class="font-bold text-sm text-themeSub mb-2"><i class="fa-solid fa-magnifying-glass mr-1"></i> Tìm kiếm tin nhắn</h4>
+                    <div class="relative mb-4">
+                        <input type="text" id="localMessageSearch" placeholder="Nhập từ khóa cần tìm..." oninput="searchLocalMessages(this.value)" class="w-full pl-3 pr-3 py-2 bg-themeBg text-themeText border border-themeBorder rounded-lg focus:outline-none focus:border-primary text-sm">
+                    </div>
+                    <div id="localSearchResults" class="space-y-2 mb-6 max-h-40 overflow-y-auto custom-scrollbar hidden"></div>
+
+                    <h4 class="font-bold text-sm text-themeSub mb-2"><i class="fa-solid fa-image text-green-500 mr-1"></i> Kho phương tiện</h4>
+                    <div id="chatMediaGallery" class="grid grid-cols-3 gap-1">
+                        <div class="text-xs text-themeSub col-span-3 italic">Bấm mở panel để tải dữ liệu...</div>
+                    </div>
+                    <div id="groupMembersSection" class="hidden mt-6 pt-4 border-t border-themeBorder">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-sm text-themeSub"><i class="fa-solid fa-users mr-1"></i> Thành viên nhóm</h4>
+                            <button onclick="promptAddMember()" class="text-[11px] bg-primary text-white px-2.5 py-1 rounded-lg hover:opacity-80 transition font-bold shadow-sm"><i class="fa-solid fa-user-plus mr-1"></i> Thêm</button>
+                        </div>
+                        <div id="groupMembersList" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-themePanel flex flex-col gap-3 relative transition-colors">
+                <div class="absolute inset-0 flex items-center justify-center text-themeSub pointer-events-none" id="chatPlaceholder">Hãy chọn một người bạn ở danh bạ bên trái để trò chuyện!</div>
+            </div>
+
+            <div class="p-3 pb-8 md:pb-3 border-t border-themeBorder bg-themePanel flex gap-2 transition-colors relative items-center z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <button onclick="document.getElementById('chatMediaUpload').click()" class="text-themeSub hover:text-green-500 text-xl px-2 transition hover:scale-110" title="Đính kèm Ảnh/Video"><i class="fa-solid fa-paperclip"></i></button>
+                <input type="file" id="chatMediaUpload" accept="image/*,video/mp4,video/webm" class="hidden" onchange="handleE2EEMediaUpload(event)">
+
+                <button onclick="toggleEmojiPicker('messageInput', this)" class="emoji-btn text-themeSub hover:text-primary text-xl px-2 transition hover:scale-110"><i class="fa-regular fa-face-smile"></i></button>
+
+                <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." disabled class="flex-1 px-4 py-2 bg-themeBg text-themeText border border-themeBorder rounded-full focus:outline-none focus:border-primary transition disabled:opacity-50">
+                <button id="btnSend" onclick="sendMessage()" disabled class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition disabled:opacity-50 flex-shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+            <div id="callOverlay" class="fixed inset-0 bg-gray-900/95 z-[70] flex flex-col items-center justify-center text-white backdrop-blur-sm transition-opacity duration-300 hidden opacity-0">
+
+                <div id="callWaitingScreen" class="flex flex-col items-center justify-center w-full max-w-md text-center transition-all duration-300 scale-95">
+                    <button onclick="minimizeCall()" class="absolute -top-20 right-0 text-gray-300 hover:text-white transition bg-gray-800 hover:bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-minus text-xl"></i>
+                    </button>
+                    <div class="relative mb-6">
+                        <div class="absolute inset-0 bg-primary/20 rounded-full animate-ping scale-150"></div>
+                        <div class="absolute inset-0 bg-primary/40 rounded-full animate-ping scale-110" style="animation-delay: 0.2s"></div>
+
+                        <img id="callAvatar" src="" class="w-32 h-32 rounded-full object-cover border-4 border-themeBorder relative z-10 bg-gray-200">
+                    </div>
+
+                    <h2 id="callName" class="text-3xl font-bold mb-2 tracking-wide">...</h2>
+                    <p id="callStatus" class="text-gray-400 mb-12 text-lg">Đang đổ chuông...</p>
+
+                    <div id="callActions" class="flex gap-8">
+                        <button onclick="endCall()" class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition shadow-lg hover:scale-110">
+                            <i class="fa-solid fa-phone-slash text-2xl"></i>
+                        </button>
+
+                        <button id="btnAcceptCall" onclick="acceptCall()" class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition shadow-[0_0_20px_rgba(34,197,94,0.5)] hover:scale-110 hidden">
+                            <i class="fa-solid fa-phone text-2xl animate-bounce"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="callActiveScreen" class="hidden w-full h-full relative bg-black">
+                    <video id="remoteVideo" class="w-full h-full object-cover" autoplay playsinline></video>
+
+                    <div id="audioOnlyPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center hidden bg-gray-900">
+                        <img id="activeCallAvatar" src="" class="w-40 h-40 rounded-full object-cover border-4 border-gray-700 mb-4 shadow-2xl">
+                        <div class="text-xl font-bold text-gray-300">Cuộc gọi thoại</div>
+                    </div>
+
+                    <div class="absolute bottom-28 right-6 w-32 md:w-48 aspect-[3/4] bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-700 shadow-2xl z-10 transition-all hover:scale-105">
+                        <video id="localVideo" class="w-full h-full object-cover transform scale-x-[-1]" autoplay playsinline muted></video>
+                    </div>
+
+                    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4 md:gap-6 bg-gray-900/80 px-6 py-3 rounded-full backdrop-blur-md border border-gray-800">
+                        <button onclick="toggleMute()" id="btnMuteMic" class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition" title="Tắt/Bật Micro">
+                            <i class="fa-solid fa-microphone text-xl"></i>
+                        </button>
+                        <button onclick="toggleVideo()" id="btnToggleCam" class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center hover:bg-gray-600 transition" title="Tắt/Bật Camera">
+                            <i class="fa-solid fa-video text-xl"></i>
+                        </button>
+                        <div class="w-px h-8 bg-gray-700 mx-2"></div> <button onclick="endCall()" class="w-14 h-14 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition shadow-[0_0_15px_rgba(239,68,68,0.5)] hover:scale-110" title="Kết thúc">
+                            <i class="fa-solid fa-phone-slash text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <audio id="sound-msg" src="sounds/message.mp3" preload="auto"></audio>
+            <audio id="sound-ring" src="sounds/ringtone.mp3" preload="auto" loop></audio>
+
+            <div id="floatingCallBadge" onclick="maximizeCall()" class="fixed top-20 right-4 bg-green-500 text-white rounded-full px-4 py-2 hidden cursor-pointer z-40 shadow-xl animate-bounce flex items-center gap-2 font-bold text-sm">
+                <i class="fa-solid fa-phone-volume"></i> Đang có cuộc gọi...
+            </div>
+        </main>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="js/global.js?v=128"></script>
+    <script src="js/chat.js?v=151"></script>
+</body>
+</html>

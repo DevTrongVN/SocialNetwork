@@ -1,0 +1,47 @@
+/* css/global.css */
+:root {
+    --bg-body: #f0f2f5;
+    --bg-panel: #ffffff;
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --border: #e5e7eb;
+    --primary: #1877f2;
+    --chat-me: #1877f2;
+    --chat-other: #e5e7eb;
+    --chat-text-other: #1f2937;
+}
+
+.dark {
+    --bg-body: #18191a;
+    --bg-panel: #242526;
+    --text-main: #e4e6eb;
+    --text-sub: #b0b3b8;
+    --border: #3e4042;
+    --primary: #2d88ff;
+    --chat-me: #2d88ff;
+    --chat-other: #3e4042;
+    --chat-text-other: #e4e6eb;
+}
+
+body { 
+    background-color: var(--bg-body); 
+    color: var(--text-main); 
+    transition: background-color 0.3s, color 0.3s;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* DÙNG CHO THANH TIẾN TRÌNH TRONG STORY 24H */
+@keyframes progress_linear_forwards {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

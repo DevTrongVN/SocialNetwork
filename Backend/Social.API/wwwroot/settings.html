@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Trọng - Cài đặt</title>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { themeBg: 'var(--bg-body)', themePanel: 'var(--bg-panel)', themeBorder: 'var(--border)', themeText: 'var(--text-main)', themeSub: 'var(--text-sub)', primary: 'var(--primary)' } } } }
+    </script>
+</head>
+<body class="antialiased pt-16 h-screen overflow-y-auto transition-colors">
+
+    <nav class="bg-themePanel shadow-sm border-b border-themeBorder fixed top-0 w-full z-50 h-16 flex items-center justify-between px-4 lg:px-10 transition-colors">
+        <a href="feed.html" class="text-2xl font-bold text-primary hover:opacity-80 transition">Dev Trọng</a>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-themeBg border border-themeBorder flex items-center justify-center text-themeText hover:opacity-80 transition">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+            </button>
+            <a href="profile.html" class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center font-bold text-primary hover:opacity-80 transition">ME</a>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto flex gap-6 mt-6 px-4 h-[calc(100vh-6rem)]">
+        
+        <aside class="w-1/4 bg-themePanel border border-themeBorder rounded-xl shadow-sm p-4 h-max">
+            <h2 class="font-bold text-xl text-themeText mb-4">Cài đặt</h2>
+            <ul class="space-y-2">
+                <li><button onclick="openTab('general')" id="tab-general" class="w-full text-left flex items-center gap-3 p-3 rounded-lg bg-blue-50 text-primary font-bold transition"><i class="fa-solid fa-gear w-5"></i> Chung</button></li>
+                <li><button onclick="openTab('privacy')" id="tab-privacy" class="w-full text-left flex items-center gap-3 p-3 rounded-lg text-themeText hover:bg-themeBg transition"><i class="fa-solid fa-lock w-5"></i> Quyền riêng tư</button></li>
+                <li><button onclick="openTab('block')" id="tab-block" class="w-full text-left flex items-center gap-3 p-3 rounded-lg text-themeText hover:bg-themeBg transition"><i class="fa-solid fa-user-slash w-5"></i> Chặn người dùng</button></li>
+            </ul>
+        </aside>
+
+        <main class="w-3/4 bg-themePanel border border-themeBorder rounded-xl shadow-sm p-6 overflow-y-auto">
+            
+            <div id="content-general" class="hidden">
+                <h3 class="text-2xl font-bold text-themeText mb-6 border-b border-themeBorder pb-4">Cài đặt chung</h3>
+                
+                <div class="mb-8 bg-themeBg p-4 rounded-xl border border-themeBorder">
+                    <h4 class="font-bold text-themeText mb-3">Ảnh Bìa (Cover Photo)</h4>
+                    <div id="settings-cover-preview" class="w-full h-32 md:h-48 rounded-lg bg-gray-300 dark:bg-gray-700 overflow-hidden mb-3 relative flex items-center justify-center">
+                        <i class="fa-solid fa-image text-3xl text-gray-400"></i>
+                    </div>
+                    <input type="file" id="coverUploadInput" accept="image/*" class="hidden" onchange="handleCoverSelect(event)">
+                    <button onclick="document.getElementById('coverUploadInput').click()" class="bg-themePanel text-themeText border border-themeBorder font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition text-sm mb-6">
+                        <i class="fa-solid fa-upload mr-2"></i>Đổi Ảnh Bìa
+                    </button>
+
+                    <h4 class="font-bold text-themeText mb-3 border-t border-themeBorder pt-4">Ảnh Đại Diện (Avatar)</h4>
+                    <div class="flex items-center gap-6">
+                        <div id="settings-avatar-preview" class="w-20 h-20 rounded-full bg-blue-100 text-primary font-bold flex items-center justify-center text-3xl overflow-hidden shadow-sm"></div>
+                        <div>
+                            <input type="file" id="avatarUploadInput" accept="image/*" class="hidden" onchange="handleAvatarSelect(event)">
+                            <button onclick="document.getElementById('avatarUploadInput').click()" class="bg-primary text-white font-bold py-2 px-4 rounded-lg hover:opacity-80 transition text-sm">
+                                <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Tải Ảnh Lên
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4 mb-8 border-b border-themeBorder pb-8">
+                    <div>
+                        <label class="block text-sm font-bold text-themeSub mb-1">Tên hiển thị</label>
+                        <input type="text" id="set-username" class="w-full px-4 py-2 bg-themeBg text-themeText border border-themeBorder rounded-lg focus:border-primary focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-themeSub mb-1">Tiểu sử (Bio)</label>
+                        <textarea id="set-bio" rows="3" class="w-full px-4 py-2 bg-themeBg text-themeText border border-themeBorder rounded-lg focus:border-primary focus:outline-none" placeholder="Viết một đoạn ngắn giới thiệu về bạn..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-themeSub mb-1">Email đăng nhập</label>
+                        <input type="email" id="set-email" class="w-full px-4 py-2 bg-themeBg text-themeText border border-themeBorder rounded-lg opacity-50 cursor-not-allowed" disabled>
+                    </div>
+                    <button onclick="saveGeneralSettings()" class="bg-themePanel text-themeText border border-themeBorder font-bold py-2 px-6 rounded-lg hover:bg-gray-100 transition">Lưu thông tin</button>
+                </div>
+
+                <h3 class="text-xl font-bold text-themeText mb-4 text-red-500"><i class="fa-solid fa-shield-halved mr-2"></i>Bảo mật</h3>
+                <div class="space-y-4 bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-100 dark:border-red-900/30">
+                    <div>
+                        <label class="block text-sm font-bold text-themeSub mb-1">Mật khẩu cũ</label>
+                        <input type="password" id="old-password" placeholder="Nhập mật khẩu hiện tại..." class="w-full px-4 py-2 bg-themePanel text-themeText border border-themeBorder rounded-lg focus:border-red-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-themeSub mb-1">Mật khẩu mới</label>
+                        <input type="password" id="new-password" placeholder="Nhập mật khẩu mới..." class="w-full px-4 py-2 bg-themePanel text-themeText border border-themeBorder rounded-lg focus:border-red-500 focus:outline-none">
+                    </div>
+                    <button onclick="changePassword()" class="bg-red-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-600 transition shadow-sm">Đổi mật khẩu</button>
+                </div>
+            </div>
+
+            <div id="content-privacy" class="hidden">
+                <h3 class="text-2xl font-bold text-themeText mb-6 border-b border-themeBorder pb-4">Quyền riêng tư</h3>
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center pb-4 border-b border-themeBorder">
+                        <div>
+                            <div class="font-bold text-themeText text-lg">Trang cá nhân của bạn</div>
+                            <div class="text-sm text-themeSub">Ai có thể vào xem Profile của bạn?</div>
+                        </div>
+                        <select id="set-profile-visibility" class="bg-themeBg text-themeText border border-themeBorder rounded-lg px-4 py-2 font-medium focus:border-primary focus:outline-none">
+                            <option value="0">🌐 Công khai</option>
+                            <option value="1">👥 Bạn bè</option>
+                            <option value="2">🔒 Chỉ mình tôi</option>
+                            <option value="3">🤝 Bạn của bạn bè</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-4 border-b border-themeBorder">
+                        <div>
+                            <div class="font-bold text-themeText text-lg">Ai có thể xem danh sách bạn bè?</div>
+                            <div class="text-sm text-themeSub">Lựa chọn người nhìn thấy tab Bạn bè.</div>
+                        </div>
+                        <select id="set-friend-visibility" class="bg-themeBg text-themeText border border-themeBorder rounded-lg px-4 py-2 font-medium focus:border-primary focus:outline-none">
+                            <option value="0">🌐 Công khai</option>
+                            <option value="1">👥 Bạn bè</option>
+                            <option value="2">🔒 Chỉ mình tôi</option>
+                            <option value="3">🤝 Bạn của bạn bè</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-4 border-b border-themeBorder">
+                        <div>
+                            <div class="font-bold text-themeText text-lg">Mặc định bài viết mới</div>
+                            <div class="text-sm text-themeSub">Quyền riêng tư mặc định khi bạn đăng bài.</div>
+                        </div>
+                        <select id="set-post-visibility" class="bg-themeBg text-themeText border border-themeBorder rounded-lg px-4 py-2 font-medium focus:border-primary focus:outline-none">
+                            <option value="0">🌐 Công khai</option>
+                            <option value="1">👥 Bạn bè</option>
+                            <option value="2">🔒 Chỉ mình tôi</option>
+                            <option value="3">🤝 Bạn của bạn bè</option>
+                        </select>
+                    </div>
+                    
+                    <button onclick="savePrivacySettings()" class="bg-primary hover:opacity-80 transition text-white font-bold py-2 px-6 rounded-lg">Lưu thay đổi</button>
+                </div>
+            </div>
+
+            <div id="content-block" class="hidden">
+                <h3 class="text-2xl font-bold text-themeText mb-2">Chặn người dùng</h3>
+                <p class="text-themeSub mb-6 border-b border-themeBorder pb-4">Một khi bạn chặn ai đó, họ sẽ không thể xem bài viết của bạn, không thể tag, nhắn tin hay thêm bạn bè.</p>
+                <div id="blockListContainer" class="space-y-3">
+                    <div class="text-center py-10 text-themeSub"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="js/settings.js"></script>
+</body>
+</html>

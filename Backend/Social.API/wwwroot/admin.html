@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Trọng - Admin Dashboard</title>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { themeBg: '#18191a', themePanel: '#242526', themeBorder: '#3e4042', themeText: '#e4e6eb', themeSub: '#b0b3b8', primary: '#2d88ff' } } } }
+    </script>
+</head>
+<body class="bg-[#18191a] text-[#e4e6eb] antialiased h-screen overflow-hidden flex flex-col">
+
+    <nav class="bg-[#242526] shadow-md border-b border-[#3e4042] w-full z-50 h-16 flex items-center justify-between px-4 lg:px-10">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-shield-halved text-red-500 text-2xl"></i>
+            <span class="text-xl font-bold text-red-500 tracking-wider">ADMIN CONTROL PANEL</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="feed.html" class="px-4 py-2 bg-[#3a3b3c] hover:bg-[#4e4f50] rounded-lg font-bold text-sm transition"><i class="fa-solid fa-arrow-left mr-2"></i>Về Bảng tin</a>
+            <button onclick="hackToAdmin()" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-bold text-sm transition shadow-[0_0_15px_rgba(202,138,4,0.5)]">
+                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Kích hoạt quyền Admin
+            </button>
+        </div>
+    </nav>
+
+    <div class="flex-1 p-6 overflow-y-auto">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6 border-b border-[#3e4042] pb-4"><i class="fa-solid fa-triangle-exclamation text-yellow-500 mr-2"></i>Danh sách Báo cáo chờ xử lý</h2>
+
+            <div class="bg-[#242526] rounded-xl border border-[#3e4042] shadow-xl overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-[#3a3b3c] text-sm uppercase tracking-wider text-[#b0b3b8]">
+                            <th class="p-4 border-b border-[#3e4042]">Ngày báo cáo</th>
+                            <th class="p-4 border-b border-[#3e4042]">Người gửi</th>
+                            <th class="p-4 border-b border-[#3e4042]">Loại vi phạm</th>
+                            <th class="p-4 border-b border-[#3e4042]">Lý do</th>
+                            <th class="p-4 border-b border-[#3e4042] text-center">Hành động xử lý (Phán quyết)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody" class="divide-y divide-[#3e4042]">
+                        <tr><td colspan="5" class="p-8 text-center text-[#b0b3b8] italic">Đang tải dữ liệu báo cáo...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

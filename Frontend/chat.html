@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Trọng - Tin nhắn riêng tư</title>
+    <link rel="stylesheet" href="css/global.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { colors: { themeBg: 'var(--bg-body)', themePanel: 'var(--bg-panel)', themeBorder: 'var(--border)', themeText: 'var(--text-main)', themeSub: 'var(--text-sub)', primary: 'var(--primary)' } } } }
+    </script>
+</head>
+<body class="antialiased pt-16 h-screen overflow-hidden transition-colors">
+
+    <nav class="bg-themePanel shadow-sm border-b border-themeBorder fixed top-0 w-full z-50 h-16 flex items-center justify-between px-4 lg:px-10 transition-colors">
+        <div class="flex items-center gap-4 w-1/2 md:w-1/3">
+            <a href="feed.html" class="text-2xl font-bold text-primary hover:opacity-80 transition">Dev Trọng</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button onclick="toggleTheme()" class="text-themeSub hover:text-primary transition text-xl"><i id="themeIcon" class="fa-solid fa-moon"></i></button>
+            <div class="relative">
+                <button onclick="toggleNotifDropdown()" class="text-themeSub hover:text-primary transition text-xl relative">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="notifBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+                <div id="notifDropdown" class="absolute right-0 mt-3 w-80 bg-themePanel border border-themeBorder shadow-xl rounded-xl hidden z-50 overflow-hidden">
+                    <div class="p-3 border-b border-themeBorder font-bold text-themeText">Thông báo</div>
+                    <div id="notifList" class="max-h-80 overflow-y-auto"></div>
+                </div>
+            </div>
+            <a href="profile.html" class="hover:opacity-80 transition cursor-pointer">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary font-bold">U</div>
+            </a>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto flex gap-0 h-[calc(100vh-4rem)] pt-6 pb-6 px-4">
+        
+        <aside class="w-1/3 md:w-1/4 bg-themePanel border border-themeBorder rounded-l-xl shadow-sm flex flex-col transition-colors overflow-hidden">
+            <div class="p-4 border-b border-themeBorder font-bold text-themeText flex justify-between items-center">
+                Danh bạ chat
+            </div>
+            
+            <div class="p-3 border-b border-themeBorder">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-search text-themeSub text-sm"></i>
+                    </div>
+                    <input type="text" id="searchEmail" placeholder="Nhập Email để tìm..." onkeypress="if(event.key==='Enter') searchUser()" class="w-full pl-9 pr-3 py-2 bg-themeBg text-themeText border border-themeBorder rounded-lg focus:outline-none focus:border-primary text-sm transition">
+                </div>
+            </div>
+
+            <div id="friendListContainer" class="flex-1 overflow-y-auto">
+                <div class="text-center py-10 text-themeSub"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            </div>
+        </aside>
+
+        <main class="w-2/3 md:w-3/4 bg-themeBg border-y border-r border-themeBorder rounded-r-xl shadow-sm flex flex-col relative transition-colors overflow-hidden">
+            
+            <div id="currentChatInfo" class="hidden p-4 bg-themePanel border-b border-themeBorder flex justify-between items-center text-sm font-bold text-primary">
+                Đang trò chuyện với: <span id="chatTargetName" class="text-themeText">...</span>
+                <span class="text-green-500 text-xs hidden md:inline"><i class="fa-solid fa-lock"></i> Mã hóa E2EE tự động</span>
+            </div>
+
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-themePanel flex flex-col gap-3 relative transition-colors">
+                <div class="absolute inset-0 flex items-center justify-center text-themeSub pointer-events-none" id="chatPlaceholder">Hãy chọn một người bạn ở danh bạ bên trái để trò chuyện!</div>
+            </div>
+
+            <div class="p-3 border-t border-themeBorder bg-themePanel flex gap-2 transition-colors relative items-center">
+                <button onclick="toggleMentionPicker('messageInput', this)" class="mention-btn text-themeSub hover:text-primary text-xl px-2 transition hover:scale-110"><i class="fa-solid fa-at"></i></button>
+                <button onclick="toggleEmojiPicker('messageInput', this)" class="emoji-btn text-themeSub hover:text-primary text-xl px-2 transition hover:scale-110"><i class="fa-regular fa-face-smile"></i></button>
+                
+                <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." disabled class="flex-1 px-4 py-2 bg-themeBg text-themeText border border-themeBorder rounded-full focus:outline-none focus:border-primary transition disabled:opacity-50">
+                <button id="btnSend" onclick="sendMessage()" disabled class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-80 transition disabled:opacity-50 flex-shrink-0"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="js/global.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>
